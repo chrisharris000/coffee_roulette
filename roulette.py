@@ -2,53 +2,105 @@
 This module is responsible for running the coffee roulette event,
 including the representation of people and connections
 """
-import collections
+from collections import namedtuple
+from random import choice
 
-class Person():
+PersonT = namedtuple("Person", ["name", "contact", "team", "year"])
+ConnectionT = namedtuple("Connection", ["person_1", "person_2", "person_3"])
+
+def Person(name, contact, team=None, year=None):
     """
-    This class represents a participant in the coffee roulette
+    Returns a PersonT namedtuple, allowing for default arguments
     """
-    def __init__(self, name, contact, team, year_level):
-        self.name = name
-        self.contact = contact
-        self.team = team
-        self.year_level = year_level
-        self.past_connections = []
+    return PersonT(name, contact, team, year)
 
-    def __str__(self):
-        return f"Person({self.name}, {self.contact})"
-
-    def has_connected_with(self, person):
-        """
-        Returns True if the participant has previously connected with the other person
-        """
-        return person in self.past_connections
-
-    def archive_connection(self, connection):
-        """
-        Adds specified connection to list of past connections
-        """
-        self.past_connections.append(connection)
-
-Connection = collections.namedtuple("Connection", ["person_1", "person_2", "connection_date"])
+def Connection(person_1, person_2, person_3=None):
+    """
+    Returns a ConnectionT namedtuple, allowing for default arguments
+    """
+    return ConnectionT(person_1, person_2, person_3)
 
 class Roulette():
     """
     This class generates the pairs between the pairs
     """
-    def __init__(self, participants):
-        self.participants = participants
+    def __init__(self):
+        self.pairings = []
+        self.participants = []
+        self.weeks = 0
 
-    def generate_all_pairs(self):
+    def generate_pairs(self):
         """
-        Generates all possible pairs
-        Output is a list of tuples, (Person, Person)
-        """
-        return []
+        This method generates all possible pairs (triple if necessary) of participants
+        Based upon answer here:
+        https://math.stackexchange.com/questions/3093225/an-efficient-approach-to-combinations-of-pairs-in-groups-without-repetitions
 
-    def generate_current_pairs(self):
+        Each row is considered a week (after changing the infinite pair to a real person)
+        If there are an odd number of participants, the left over person is randomly assigned to
+        another pair.
+
+        Output is a list of weekly pairs
+        Each week of pairs is a Connection object
         """
-        Generates the pairs for the current time period
-        Output is a list of tuples, (Person, Person)
+        n = len(self.participants)
+        for i in range(n):
+            weekly_pairs = []
+            for k in range(n // 2):
+                person_1_index = (i + k) % n
+                person_2_index = (i - k) % n
+
+                # this handles the infinite pairing
+                if person_1_index == person_2_index:
+                    person_2_index = (i + n // 2) % n
+
+                person_1 = self.participants[person_1_index]
+                person_2 = self.participants[person_2_index]
+
+                weekly_pairs.append(Connection(person_1, person_2))
+
+            if n % 2 == 1:
+                # this handles the odd number of participants
+                missing_person = self.participants[(n // 2 + 1 + i) % n]
+                random_pair = choice(weekly_pairs)
+                person_a, person_b, _ = random_pair
+                new_triple = Connection(person_a, person_b, missing_person)
+                weekly_pairs.append(new_triple)
+                weekly_pairs.remove(random_pair)
+
+            self.pairings.append(weekly_pairs)
+
+    def add_participant(self, person):
         """
-        return []
+        This method adds another participant to the roulette
+        """
+        self.participants.append(person)
+        self.weeks += 1
+
+if __name__ == "__main__":
+    # Example usage of Roulette class
+    
+    roulette = Roulette()
+    participants = [
+        Person("Chris", 0),
+        Person("Jess", 1),
+        Person("JP", 2),
+        Person("Zara", 3),
+        Person("Navid", 4),
+        Person("Amy", 5),
+        Person("Momo", 6),
+        Person("Liam", 7)
+    ]
+
+    for participant in participants:
+        roulette.add_participant(participant)
+
+    roulette.generate_pairs()
+
+    for week in range(roulette.weeks):
+        print(f"Week {week + 1}:")
+        for pair in roulette.pairings[week]:
+            if pair.person_3 is None:
+                print(f"{pair.person_1.name} is paired with {pair.person_2.name}")
+            else:
+                print(f"{pair.person_1.name} is paired with {pair.person_2.name} and {pair.person_3.name}")
+            print()
