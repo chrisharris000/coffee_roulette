@@ -31,7 +31,7 @@ class Roulette():
         self.pairings = []
         self.participants = []
         self.weeks = 0
-        
+
         # default config parameters will be overwritten by read_config
         self.participant_file = "participants.csv"
         self.pairs_file = "pairs.csv"
@@ -86,6 +86,23 @@ class Roulette():
         self.participants.append(person)
         self.weeks += 1
 
+    def read_participants_from_file(self, file_path=None):
+        """
+        This method reads the list of participants and associated details from a csv file,
+        specified by the input_file field of config.yml
+        """
+        if file_path is None:
+            file_path = self.participant_file
+
+        with open(file_path, "r") as f:
+            reader = csv.reader(f)
+
+            for row in reader:
+                name = row[self.name_column_index]
+                email = row[self.email_column_index]
+                participant = Person(name, email)
+                self.add_participant(participant)
+
     def write_pairs_to_file(self, file_path=None):
         """
         This method writes the generated pairs to a csv file,
@@ -123,8 +140,9 @@ class Roulette():
 
 if __name__ == "__main__":
     # Example usage of Roulette class
-    
+
     roulette = Roulette()
+    '''
     participants = [
         Person("Shirley", 0),
         Person("Emily", 1),
@@ -138,16 +156,18 @@ if __name__ == "__main__":
 
     for participant in participants:
         roulette.add_participant(participant)
-
+'''
+    roulette.read_participants_from_file()
     roulette.generate_pairs()
 
-    for week in range(roulette.weeks):
-        print(f"Week {week + 1}:")
-        for pair in roulette.pairings[week]:
-            if pair.person_3 is None:
-                print(f"{pair.person_1.name} is paired with {pair.person_2.name}")
+    for demo_week in range(roulette.weeks):
+        print(f"Week {demo_week + 1}:")
+        for demo_pair in roulette.pairings[demo_week]:
+            if demo_pair.person_3 is None:
+                print(f"{demo_pair.person_1.name} is paired with {demo_pair.person_2.name}")
             else:
-                print(f"{pair.person_1.name} is paired with {pair.person_2.name} and {pair.person_3.name}")
+                print(f"{demo_pair.person_1.name} is paired with "
+                      f"{demo_pair.person_2.name} and {demo_pair.person_3.name}")
         print()
     roulette.read_config()
     roulette.write_pairs_to_file()
