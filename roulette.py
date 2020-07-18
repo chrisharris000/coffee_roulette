@@ -3,6 +3,7 @@ This module is responsible for running the coffee roulette event,
 including the representation of people and connections
 """
 from collections import namedtuple
+import csv
 from random import choice
 
 PersonT = namedtuple("Person", ["name", "contact", "team", "year"])
@@ -76,19 +77,38 @@ class Roulette():
         self.participants.append(person)
         self.weeks += 1
 
+    def write_to_file(self, file_path="pairs.csv"):
+        """
+        This method writes the generated pairs to a csv file
+        File is written to current directoy unless file_path argument set
+        """
+        with open(file_path, "w", newline="") as f:
+            writer = csv.writer(f)
+            rows = []
+            # structure:
+            # week (1 indexed), person_1, person_2, person_3 ("" if only a pair)
+            for week in range(self.weeks):
+                for pair in self.pairings[week]:
+                    if pair.person_3 is None:
+                        row = [week + 1, pair.person_1.name, pair.person_2.name, ""]
+                    else:
+                        row = [week + 1, pair.person_1.name, pair.person_2.name, pair.person_3.name]
+                    rows.append(row)
+            writer.writerows(rows)
+
 if __name__ == "__main__":
     # Example usage of Roulette class
     
     roulette = Roulette()
     participants = [
-        Person("Chris", 0),
-        Person("Jess", 1),
-        Person("JP", 2),
-        Person("Zara", 3),
-        Person("Navid", 4),
-        Person("Amy", 5),
-        Person("Momo", 6),
-        Person("Liam", 7)
+        Person("Shirley", 0),
+        Person("Emily", 1),
+        Person("Prima", 2),
+        Person("Chris", 3),
+        Person("Jason", 4),
+        Person("Liam", 5),
+        Person("Merin", 6),
+        Person("Momo", 7)
     ]
 
     for participant in participants:
@@ -103,4 +123,5 @@ if __name__ == "__main__":
                 print(f"{pair.person_1.name} is paired with {pair.person_2.name}")
             else:
                 print(f"{pair.person_1.name} is paired with {pair.person_2.name} and {pair.person_3.name}")
-            print()
+        print()
+    roulette.write_to_file()
