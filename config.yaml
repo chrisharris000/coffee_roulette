@@ -1,5 +1,7 @@
 --- 
-input_file: participants.csv
+participant_file: participants.csv
 name_column_index: 0
 email_column_index: 1
-output_file: pairs.csv
+team_column_index: -1
+year_column_index: -1
+pairs_file: pairs.csv

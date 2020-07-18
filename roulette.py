@@ -1,6 +1,8 @@
 """
 This module is responsible for running the coffee roulette event,
-including the representation of people and connections
+including the representation of people and connections,
+reading files,
+and generating pairs
 """
 from collections import namedtuple
 import csv
@@ -33,10 +35,14 @@ class Roulette():
         self.weeks = 0
 
         # default config parameters will be overwritten by read_config
-        self.participant_file = "participants.csv"
-        self.pairs_file = "pairs.csv"
-        self.name_column_index = 0
-        self.email_column_index = 1
+        self.config = {
+            "participant_file": "participants.csv",
+            "pairs_file": "pairs.csv",
+            "name_column_index": 0,
+            "email_column_index": 1,
+            "team_column_index": -1, # currently not used
+            "year_column_index": -1, # currently not used
+        }
         self.read_config()
 
     def generate_pairs(self):
@@ -92,15 +98,24 @@ class Roulette():
         specified by the input_file field of config.yml
         """
         if file_path is None:
-            file_path = self.participant_file
+            file_path = self.config["participant_file"]
 
         with open(file_path, "r") as f:
             reader = csv.reader(f)
 
             for row in reader:
-                name = row[self.name_column_index]
-                email = row[self.email_column_index]
-                participant = Person(name, email)
+                name = row[self.config["name_column_index"]]
+                email = row[self.config["email_column_index"]]
+                team = None
+                year = None
+
+                if self.config["team_column_index"] != -1:
+                    team = row[self.config["team_column_index"]]
+
+                if self.config["year_column_index"] != -1:
+                    year = row[self.config["year_column_index"]]
+
+                participant = Person(name, email, team, year)
                 self.add_participant(participant)
 
     def write_pairs_to_file(self, file_path=None):
@@ -109,7 +124,7 @@ class Roulette():
         specified by output_file field of config.yml
         """
         if file_path is None:
-            file_path = self.pairs_file
+            file_path = self.config["pairs_file"]
         with open(file_path, "w", newline="") as f:
             writer = csv.writer(f)
             rows = []
@@ -133,10 +148,15 @@ class Roulette():
         except FileNotFoundError:
             sys.exit("Config file could not be found. Aborting")
 
-        self.participant_file = config["input_file"]
-        self.pairs_file = config["output_file"]
-        self.name_column_index = int(config["name_column_index"])
-        self.email_column_index = int(config["email_column_index"])
+        self.config = config
+
+        int_params = ["name_column_index",
+                      "email_column_index",
+                      "team_column_index", # currently not used
+                      "year_column_index" # currently not used
+                      ]
+        for param in int_params:
+            self.config[param] = int(self.config[param])
 
 if __name__ == "__main__":
     # Example usage of Roulette class
@@ -156,7 +176,8 @@ if __name__ == "__main__":
 
     for participant in participants:
         roulette.add_participant(participant)
-'''
+    '''
+    # uncomment next line and comment out previous lines to test reading from file functionality
     roulette.read_participants_from_file()
     roulette.generate_pairs()
 
