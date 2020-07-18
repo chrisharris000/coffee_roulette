@@ -5,6 +5,8 @@ including the representation of people and connections
 from collections import namedtuple
 import csv
 from random import choice
+import sys
+import yaml
 
 PersonT = namedtuple("Person", ["name", "contact", "team", "year"])
 ConnectionT = namedtuple("Connection", ["person_1", "person_2", "person_3"])
@@ -29,6 +31,13 @@ class Roulette():
         self.pairings = []
         self.participants = []
         self.weeks = 0
+        
+        # default config parameters will be overwritten by read_config
+        self.participant_file = "participants.csv"
+        self.pairs_file = "pairs.csv"
+        self.name_column_index = 0
+        self.email_column_index = 1
+        self.read_config()
 
     def generate_pairs(self):
         """
@@ -77,11 +86,13 @@ class Roulette():
         self.participants.append(person)
         self.weeks += 1
 
-    def write_to_file(self, file_path="pairs.csv"):
+    def write_pairs_to_file(self, file_path=None):
         """
-        This method writes the generated pairs to a csv file
-        File is written to current directoy unless file_path argument set
+        This method writes the generated pairs to a csv file,
+        specified by output_file field of config.yml
         """
+        if file_path is None:
+            file_path = self.pairs_file
         with open(file_path, "w", newline="") as f:
             writer = csv.writer(f)
             rows = []
@@ -95,6 +106,20 @@ class Roulette():
                         row = [week + 1, pair.person_1.name, pair.person_2.name, pair.person_3.name]
                     rows.append(row)
             writer.writerows(rows)
+
+    def read_config(self):
+        """
+        This method reads the config file and populates relevant variables
+        """
+        try:
+            config = yaml.safe_load(open("config.yaml"))
+        except FileNotFoundError:
+            sys.exit("Config file could not be found. Aborting")
+
+        self.participant_file = config["input_file"]
+        self.pairs_file = config["output_file"]
+        self.name_column_index = int(config["name_column_index"])
+        self.email_column_index = int(config["email_column_index"])
 
 if __name__ == "__main__":
     # Example usage of Roulette class
@@ -124,4 +149,5 @@ if __name__ == "__main__":
             else:
                 print(f"{pair.person_1.name} is paired with {pair.person_2.name} and {pair.person_3.name}")
         print()
-    roulette.write_to_file()
+    roulette.read_config()
+    roulette.write_pairs_to_file()

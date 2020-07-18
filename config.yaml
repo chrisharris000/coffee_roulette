@@ -1,0 +1,5 @@
+--- 
+input_file: participants.csv
+name_column_index: 0
+email_column_index: 1
+output_file: pairs.csv
