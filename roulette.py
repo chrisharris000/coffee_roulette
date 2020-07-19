@@ -6,6 +6,7 @@ and generating pairs
 """
 from collections import namedtuple
 import csv
+from mdutils.mdutils import MdUtils
 from random import choice
 import sys
 import yaml
@@ -37,7 +38,8 @@ class Roulette():
         # default config parameters will be overwritten by read_config
         self.config = {
             "participant_file": "participants.csv",
-            "pairs_file": "pairs.csv",
+            "pairs_csv_file": "pairs.csv",
+            "pairs_md_file": "pairs.md",
             "name_column_index": 0,
             "email_column_index": 1,
             "team_column_index": -1, # currently not used
@@ -118,13 +120,13 @@ class Roulette():
                 participant = Person(name, email, team, year)
                 self.add_participant(participant)
 
-    def write_pairs_to_file(self, file_path=None):
+    def write_pairs_to_csv_file(self, file_path=None):
         """
         This method writes the generated pairs to a csv file,
-        specified by output_file field of config.yml
+        specified by pairs_csv_file field of config.yml
         """
         if file_path is None:
-            file_path = self.config["pairs_file"]
+            file_path = self.config["pairs_csv_file"]
         with open(file_path, "w", newline="") as f:
             writer = csv.writer(f)
             rows = []
@@ -138,6 +140,46 @@ class Roulette():
                         row = [week + 1, pair.person_1.name, pair.person_2.name, pair.person_3.name]
                     rows.append(row)
             writer.writerows(rows)
+
+    def write_pairs_to_md_file(self, file_path=None):
+        """
+        This method writes the generated pairs to a md file,
+        specified by pairs_md_file field of config.yml
+        """
+        if file_path is None:
+            file_path = self.config["pairs_md_file"]
+
+        md_emoji = [
+            ":coffee:",
+            ":tea:",
+            ":beer:",
+            ":cocktail:",
+            ":tropical_drink:",
+            ":wine_glass:",
+            ":cake:",
+            ":cookie:",
+            ":croissant:",
+            ":pancakes:",
+            ":pretzel:",
+            ":doughnut:",
+            ":pie:",
+            ":cup_with_straw:"
+        ]
+
+        md_file = MdUtils(file_name=file_path, title="Robogals Coffee Roulette")
+
+        for week in range(self.weeks):
+            md_file.new_paragraph(f"*Week {week + 1}:*")
+            for pair in self.pairings[week]:
+                if pair.person_3 is None:
+                    md_file.new_line(f"*{pair.person_1.name}* {choice(md_emoji)} is paired with "
+                                     f"*{pair.person_2.name}* {choice(md_emoji)}")
+                else:
+                    md_file.new_line(f"*{pair.person_1.name}* {choice(md_emoji)} is paired with "
+                                     f"*{pair.person_2.name}* {choice(md_emoji)} and "
+                                     f"*{pair.person_3.name}* {choice(md_emoji)}")
+            md_file.new_paragraph()
+        md_file.create_md_file()
 
     def read_config(self):
         """
@@ -162,6 +204,8 @@ if __name__ == "__main__":
     # Example usage of Roulette class
 
     roulette = Roulette()
+    roulette.read_config()
+
     '''
     participants = [
         Person("Shirley", 0),
@@ -177,7 +221,6 @@ if __name__ == "__main__":
     for participant in participants:
         roulette.add_participant(participant)
     '''
-    # uncomment next line and comment out previous lines to test reading from file functionality
     roulette.read_participants_from_file()
     roulette.generate_pairs()
 
@@ -190,5 +233,5 @@ if __name__ == "__main__":
                 print(f"{demo_pair.person_1.name} is paired with "
                       f"{demo_pair.person_2.name} and {demo_pair.person_3.name}")
         print()
-    roulette.read_config()
-    roulette.write_pairs_to_file()
+    #roulette.write_pairs_to_csv_file()
+    #roulette.write_pairs_to_md_file()

@@ -4,4 +4,5 @@ name_column_index: 0
 email_column_index: 1
 team_column_index: -1
 year_column_index: -1
-pairs_file: pairs.csv
+pairs_csv_file: pairs.csv
+pairs_md_file: pairs.md
