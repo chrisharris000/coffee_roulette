@@ -15,7 +15,7 @@ Creating an implementation of coffee roulette, similar to [Coffee Roulette](http
 1. `$ git clone https://github.com/chrisharris000/coffee_roulette/tree/master`
 2. `$ cd coffee_roulette`
 3. `$ git checkout stable`
-4. `$ pip install requirements.txt`
+4. `$ pip install -r requirements.txt`
 5. Convert Google Form responses to Google Sheets
 6. Download Google Sheets responses as a .csv file (File -> Download -> Comma Separated Values) into the same directory as the `roulette.py` program
 7. Change relevant values of `config.yaml`
