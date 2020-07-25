@@ -1,0 +1,2 @@
+mdutils==1.2.2
+pyyaml==5.3.1

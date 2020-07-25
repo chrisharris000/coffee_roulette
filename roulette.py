@@ -131,13 +131,16 @@ class Roulette():
             writer = csv.writer(f)
             rows = []
             # structure:
-            # week (1 indexed), person_1, person_2, person_3 ("" if only a pair)
+            # week (1 indexed), person_1, person_2, person_3 ("" if only a pair),
+            # person_1 email, person_2 email, person_3 email ("" if only a pair)
             for week in range(self.weeks):
                 for pair in self.pairings[week]:
                     if pair.person_3 is None:
-                        row = [week + 1, pair.person_1.name, pair.person_2.name, ""]
+                        row = [week + 1, pair.person_1.name, pair.person_2.name, "",
+                               pair.person_1.contact, pair.person_2.contact, ""]
                     else:
-                        row = [week + 1, pair.person_1.name, pair.person_2.name, pair.person_3.name]
+                        row = [week + 1, pair.person_1.name, pair.person_2.name, pair.person_3.name,
+                               pair.person_1.contact, pair.person_2.contact, pair.person_3.contact]
                     rows.append(row)
             writer.writerows(rows)
 
@@ -233,5 +236,6 @@ if __name__ == "__main__":
                 print(f"{demo_pair.person_1.name} is paired with "
                       f"{demo_pair.person_2.name} and {demo_pair.person_3.name}")
         print()
-    #roulette.write_pairs_to_csv_file()
-    #roulette.write_pairs_to_md_file()
+    roulette.write_pairs_to_csv_file()
+    roulette.write_pairs_to_md_file()
+    input()
