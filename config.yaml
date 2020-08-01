@@ -6,3 +6,6 @@ team_column_index: -1
 year_column_index: -1
 pairs_csv_file: pairs.csv
 pairs_md_file: pairs.md
+send_email: false
+week_num: 1
+deadline: 01/01/1970
