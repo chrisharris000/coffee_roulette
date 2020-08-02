@@ -193,6 +193,9 @@ class Roulette():
         - email is from the contact column
         - week_num is 1 indexed
         """
+        if not self.config["send_email"]:
+            return False
+
         if week_num is None:
             week_num = self.config["week_num"]
 
@@ -215,19 +218,21 @@ class Roulette():
                     if len(people) == 1:
                         s = f"{people[0].name} ({people[0].contact})"
                     else:
-                        s = (f"{people[0].name} ({people[0].contact}) and"
+                        s = (f"{people[0].name} ({people[0].contact}) and "
                              f"{people[1].name} ({people[1].contact})")
 
-                    msg = (f"Hi {person.name},\n"
+                    msg = (f"Hi {person.name},\n\n"
                            f"This week you have been matched with {s} for Robogals Coffee Roulette."
-                           f" Make sure you get in contact with them, the sooner the better,"
+                           f" Make sure you get in contact with them, the sooner the better, "
                            f"and organise a time and place to meet up and get to know each other.\n"
                            f"Please do so before {deadline}, as this is when the next lot of "
-                           f"pairs will be released.\n"
+                           f"pairs will be released.\n\n"
                            f"If you have any questions, please send us a message on "
                            f"#coffee-roulette or robogals.coffee.roulette@gmail.com")
 
-                    ezgmail.send(contact, f"Robogals Coffee Roulette - Week {week_num}", msg)
+                    subject = f"Robogals Coffee Roulette - Week {week_num}"
+
+                    ezgmail.send(contact, subject, msg)
 
     def is_email(self, contact):
         """
@@ -253,6 +258,7 @@ class Roulette():
                       "year_column_index", # currently not used
                       "week_num"
                       ]
+
         for param in int_params:
             self.config[param] = int(self.config[param])
 
@@ -260,7 +266,7 @@ if __name__ == "__main__":
     # Example usage of Roulette class
 
     roulette = Roulette()
-    roulette.read_config()
+    #roulette.read_config()
 
     '''
     participants = [
@@ -291,5 +297,5 @@ if __name__ == "__main__":
         print()
     roulette.write_pairs_to_csv_file()
     roulette.write_pairs_to_md_file()
-    roulette.send_participants_email(1, "15/08/20")
+    roulette.send_participants_email()
     input()
