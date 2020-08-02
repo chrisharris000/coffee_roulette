@@ -68,13 +68,17 @@ class Roulette():
         n = len(self.participants)
         for i in range(n):
             weekly_pairs = []
-            for k in range(n // 2):
-                person_1_index = (i + k) % n
-                person_2_index = (i - k) % n
 
-                # this handles the infinite pairing
-                if person_1_index == person_2_index:
-                    person_2_index = (i + n // 2) % n
+            # this handles the infinite pairing
+            person_1_index = i
+            person_2_index = n - 1
+            person_1 = self.participants[person_1_index]
+            person_2 = self.participants[person_2_index]
+            weekly_pairs.append(Connection(person_1, person_2))
+
+            for k in range(1, n // 2):
+                person_1_index = (i + k) % (n - 1)
+                person_2_index = (i - k) % (n - 1)
 
                 person_1 = self.participants[person_1_index]
                 person_2 = self.participants[person_2_index]
@@ -83,7 +87,7 @@ class Roulette():
 
             if n % 2 == 1:
                 # this handles the odd number of participants
-                missing_person = self.participants[(n // 2 + 1 + i) % n]
+                missing_person = self.participants[(n // 2 + i) % (n - 1)]
                 random_pair = choice(weekly_pairs)
                 person_a, person_b, _ = random_pair
                 new_triple = Connection(person_a, person_b, missing_person)
