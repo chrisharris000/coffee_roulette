@@ -1,13 +1,17 @@
 """
-This module is responsible for running the coffee roulette event,
-including the representation of people and connections,
-reading files,
-and generating pairs
+This module is responsible for running the coffee roulette event, including:
+- the representation of people and connections
+- reading files
+- generating pairs
+- writing files
+- sending emails
 """
 from collections import namedtuple
 import csv
+import ezgmail
 from mdutils.mdutils import MdUtils
 from random import choice
+import re
 import sys
 import yaml
 
@@ -44,6 +48,9 @@ class Roulette():
             "email_column_index": 1,
             "team_column_index": -1, # currently not used
             "year_column_index": -1, # currently not used
+            "send_email": False,
+            "week_num": 1,
+            "deadline": "01/01/1970"
         }
         self.read_config()
 
@@ -63,13 +70,17 @@ class Roulette():
         n = len(self.participants)
         for i in range(n):
             weekly_pairs = []
-            for k in range(n // 2):
-                person_1_index = (i + k) % n
-                person_2_index = (i - k) % n
 
-                # this handles the infinite pairing
-                if person_1_index == person_2_index:
-                    person_2_index = (i + n // 2) % n
+            # this handles the infinite pairing
+            person_1_index = i
+            person_2_index = n - 1
+            person_1 = self.participants[person_1_index]
+            person_2 = self.participants[person_2_index]
+            weekly_pairs.append(Connection(person_1, person_2))
+
+            for k in range(1, n // 2):
+                person_1_index = (i + k) % (n - 1)
+                person_2_index = (i - k) % (n - 1)
 
                 person_1 = self.participants[person_1_index]
                 person_2 = self.participants[person_2_index]
@@ -78,7 +89,7 @@ class Roulette():
 
             if n % 2 == 1:
                 # this handles the odd number of participants
-                missing_person = self.participants[(n // 2 + 1 + i) % n]
+                missing_person = self.participants[(n // 2 + i) % (n - 1)]
                 random_pair = choice(weekly_pairs)
                 person_a, person_b, _ = random_pair
                 new_triple = Connection(person_a, person_b, missing_person)
@@ -184,6 +195,61 @@ class Roulette():
             md_file.new_paragraph()
         md_file.create_md_file()
 
+    def send_participants_email(self, week_num=None, deadline=None):
+        """
+        This method will send an email to each participant stating who their pair is for
+        the week_num
+        - email is from the contact column
+        - week_num is 1 indexed
+        """
+        if not self.config["send_email"]:
+            return False
+
+        if week_num is None:
+            week_num = self.config["week_num"]
+
+        if deadline is None:
+            deadline = self.config["deadline"]
+
+        try:
+            week_num_pairs = self.pairings[week_num - 1]
+        except IndexError:
+            raise IndexError("Invalid week number")
+
+        for pair in week_num_pairs:
+            for person in pair:
+                if person is None:
+                    continue
+                contact = person.contact
+                if self.is_email(contact):
+                    s = ""
+                    people = [p for p in pair if p != person and p is not None]
+                    if len(people) == 1:
+                        s = f"{people[0].name} ({people[0].contact})"
+                    else:
+                        s = (f"{people[0].name} ({people[0].contact}) and "
+                             f"{people[1].name} ({people[1].contact})")
+
+                    msg = (f"Hi {person.name},\n\n"
+                           f"This week you have been matched with {s} for Robogals Coffee Roulette."
+                           f" Make sure you get in contact with them, the sooner the better, "
+                           f"and organise a time and place to meet up and get to know each other.\n"
+                           f"Please do so before {deadline}, as this is when the next lot of "
+                           f"pairs will be released.\n\n"
+                           f"If you have any questions, please send us a message on "
+                           f"#coffee-roulette or robogals.coffee.roulette@gmail.com")
+
+                    subject = f"Robogals Coffee Roulette - Week {week_num}"
+
+                    ezgmail.send(contact, subject, msg)
+
+    def is_email(self, contact):
+        """
+        This method provides simple validation of a contact email
+        """
+        regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+        return re.search(regex, contact)
+
     def read_config(self):
         """
         This method reads the config file and populates relevant variables
@@ -198,8 +264,10 @@ class Roulette():
         int_params = ["name_column_index",
                       "email_column_index",
                       "team_column_index", # currently not used
-                      "year_column_index" # currently not used
+                      "year_column_index", # currently not used
+                      "week_num"
                       ]
+
         for param in int_params:
             self.config[param] = int(self.config[param])
 
@@ -207,7 +275,7 @@ if __name__ == "__main__":
     # Example usage of Roulette class
 
     roulette = Roulette()
-    roulette.read_config()
+    #roulette.read_config()
 
     '''
     participants = [
@@ -238,4 +306,5 @@ if __name__ == "__main__":
         print()
     roulette.write_pairs_to_csv_file()
     roulette.write_pairs_to_md_file()
+    roulette.send_participants_email()
     input()
