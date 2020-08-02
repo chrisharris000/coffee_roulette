@@ -8,6 +8,7 @@ Creating an implementation of coffee roulette, similar to [Coffee Roulette](http
 - [x] Generate the current set of pairs, taking into account previous matchings
 - [x] Output sets of pairs (csv)
 - [x] Output sets of pairs (md)
+- [x] Automated email to participants
 - [ ] Create Flask application to display weekly pairs
 - [ ] Add additional info to website such as cafe suggestions and conversation starters
 
@@ -26,5 +27,9 @@ Creating an implementation of coffee roulette, similar to [Coffee Roulette](http
    - **year_column_index:** the column number that the participants year is in, zero-indexed
    - **pairs_csv_file:** the name of the output file for the pairs (csv format)
    - **pairs_md_file:** the name of the output file for the pairs (md format, useful for posting on Slack)
-8. `$ python roulette.py`
-9. The generated pairs will be available in the terminal, .csv file and .md files
+   - **send_email:** boolean flag (true/false) for sending an automated email to participants
+   - **week_num:** 1 indexed week number for the automated email
+   - **deadline:** deadline for a week of coffee roulette, used in the email
+8. Download `token.json` and `credentials.json` into the same directory as `roulette.py`
+9. `$ python roulette.py`
+10. The generated pairs will be available in the terminal, .csv file and .md files
