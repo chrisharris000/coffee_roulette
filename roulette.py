@@ -1,8 +1,10 @@
 """
-This module is responsible for running the coffee roulette event,
-including the representation of people and connections,
-reading files,
-and generating pairs
+This module is responsible for running the coffee roulette event, including:
+- the representation of people and connections
+- reading files
+- generating pairs
+- writing files
+- sending emails
 """
 from collections import namedtuple
 import csv
