@@ -68,7 +68,7 @@ class Roulette():
         Each week of pairs is a Connection object
         """
         n = len(self.participants)
-        for i in range(n):
+        for i in range(n-1):
             weekly_pairs = []
 
             # this handles the infinite pairing
@@ -144,7 +144,7 @@ class Roulette():
             # structure:
             # week (1 indexed), person_1, person_2, person_3 ("" if only a pair),
             # person_1 email, person_2 email, person_3 email ("" if only a pair)
-            for week in range(self.weeks):
+            for week in range(self.weeks - 1):
                 for pair in self.pairings[week]:
                     if pair.person_3 is None:
                         row = [week + 1, pair.person_1.name, pair.person_2.name, "",
@@ -182,7 +182,7 @@ class Roulette():
 
         md_file = MdUtils(file_name=file_path, title="Robogals Coffee Roulette")
 
-        for week in range(self.weeks):
+        for week in range(self.weeks - 1):
             md_file.new_paragraph(f"*Week {week + 1}:*")
             for pair in self.pairings[week]:
                 if pair.person_3 is None:
@@ -295,7 +295,7 @@ if __name__ == "__main__":
     roulette.read_participants_from_file()
     roulette.generate_pairs()
 
-    for demo_week in range(roulette.weeks):
+    for demo_week in range(roulette.weeks - 1):
         print(f"Week {demo_week + 1}:")
         for demo_pair in roulette.pairings[demo_week]:
             if demo_pair.person_3 is None:
